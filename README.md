@@ -77,7 +77,7 @@ The EKS cluster can be deployed using the module arguments in the [Template](#co
 This template uses three providers; *AWS*, *HELM*, and *Kubernetes*.
 HELM and kubernetes providers use the module's outputs to get the cluster's API credentials to access the EKS cluster. As an alternative method, the *kubeconfig* file can be used after fetching its data using aws cli as stated in the [Notes](#notes) section. Then they can be refered using the `config_path` provider argument.
 
-## Clsuter Resource
+## Cluster Resource
 
 ### Permissions
 
@@ -152,7 +152,7 @@ module "vpc" {
     availability_zones         = ["${var.metadata.region}a", "${var.metadata.region}b"]
     security_group = {
       ip_protocol = "-1"
-      ssh_port = {
+      ssh_port    = {
         cidr_ipv4 = "0.0.0.0/0"
       }
     }
@@ -189,7 +189,7 @@ module "eks" {
         subnet_ids = module.vpc.private_subnet_cidr_blocks
       }
       aws_mountpoint_s3_csi_driver = {
-        enable = true
+        enable     = true
       }
 
     }
@@ -278,16 +278,16 @@ module "eks" {
   }
 
   cluster_settings = {
-    cluster_subnet_ids = list(string)  # Required, min are two, in different AZs
-    allowed_cidrs_to_access_cluster_publicly = list(string) # Optional, set default to "0.0.0.0/0"
-    set_custom_pod_cidr_block = string  # Optional
-    support_type = string # Optional, defaults to "STANDARD"
-    ip_family = string # Optional, defaults to "ipv4"
-    security_group_ids = list(string) # Optional, EKS will generate one if not specified.
-    enable_endpoint_public_access = bool # Optional, defaults to true
-    enable_endpoint_private_access = bool  # Optional, defaults to false
-    create_eks_admin_access_iam_group = bool  # Optional, defaults to false
-    create_eks_custom_access_iam_group = bool  # Optional, defaults to false
+    cluster_subnet_ids                        = list(string)  # Required, min are two, in different AZs
+    allowed_cidrs_to_access_cluster_publicly  = list(string) # Optional, set default to "0.0.0.0/0"
+    set_custom_pod_cidr_block                 = string  # Optional
+    support_type                              = string # Optional, defaults to "STANDARD"
+    ip_family                                 = string # Optional, defaults to "ipv4"
+    security_group_ids                        = list(string) # Optional, EKS will generate one if not specified.
+    enable_endpoint_public_access             = bool # Optional, defaults to true
+    enable_endpoint_private_access            = bool  # Optional, defaults to false
+    create_eks_admin_access_iam_group         = bool  # Optional, defaults to false
+    create_eks_custom_access_iam_group        = bool  # Optional, defaults to false
 
     enable_logging = {
       api               = bool # Optional, default to false
@@ -304,8 +304,8 @@ module "eks" {
       aws_guardduty_agent             = bool # Optional, default to false
       amazon_cloudwatch_observability = bool # Optional, default to false
       aws_ebs_csi_driver = {
-        fstype = string # Defaults to "ext4"
-        ebs_type = string # Defaults to "gp3"
+        fstype    = string # Defaults to "ext4"
+        ebs_type  = string # Defaults to "gp3"
         iopsPerGB =  number # Optional
         encrypted = bool # Defaults to true
       }
@@ -340,17 +340,17 @@ module "eks" {
       max_unavailable = number # Optional, default to 1
     }
     remote_access  = { # Optional
-      enable       = bool, false # Optional, defaults to false
-      ssh_key_name = string
+      enable                  = bool, false # Optional, defaults to false
+      ssh_key_name            = string
       allowed_security_groups = list(string) # Optional, defaults to "0.0.0.0/0" acccessibility
     }
   }
 
   fargate_profile = {
-    cluster_name  = string # optional
-    subnet_ids = list(string)
-    fargate_profile_name = string # optional
-    namespace = string # optional, if not stated, custom namespace "fargate-space" is specified
+    cluster_name          = string # optional
+    subnet_ids            = list(string)
+    fargate_profile_name  = string # optional
+    namespace             = string # optional, if not stated, custom namespace "fargate-space" is specified
   }
 
   plugins = { # Optional, used as `argument = {}`
@@ -392,12 +392,12 @@ module "eks" {
     kubernetes_dashboard = {
       hosts          = list(string)
       use_internally = bool # Optiona, defaults to false
-      values = list(string) # Optional, e.g [<<EOF...EOF]
+      values         = list(string) # Optional, e.g [<<EOF...EOF]
     }
     rancher = {
-      host                 = string
-      use_internal_ingress = bool # Optiona, defaults to false
-      values = list(string) # Optional, e.g [<<EOF...EOF]
+      host                  = string
+      use_internal_ingress  = bool # Optiona, defaults to false
+      values                = list(string) # Optional, e.g [<<EOF...EOF]
     }
     calico_cni = {
       enable = bool # Defaults to false

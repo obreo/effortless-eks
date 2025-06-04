@@ -11,10 +11,10 @@ resource "aws_vpc" "vpc" {
 
 # SUBNET
 resource "aws_subnet" "public" {
-  count                                           = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? length(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64) : length(var.vpc_settings.public_subnet_cidr_blocks)
+  count                                           = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 : length(var.vpc_settings.public_subnet_cidr_blocks)
   vpc_id                                          = aws_vpc.vpc.id
   cidr_block                                      = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? null : try(var.vpc_settings.public_subnet_cidr_blocks[count.index], null)
-  ipv6_cidr_block                                 = try(length(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64) != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64[count.index]) : null)
+  ipv6_cidr_block                                 = try(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64[count.index]) : null)
   availability_zone                               = try(var.vpc_settings.availability_zones[count.index % length(var.vpc_settings.availability_zones)], null)
   enable_resource_name_dns_a_record_on_launch     = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? false : true
   map_public_ip_on_launch                         = true
@@ -32,10 +32,10 @@ resource "aws_subnet" "public" {
   }
 }
 resource "aws_subnet" "private" {
-  count                                           = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) : length(var.vpc_settings.private_subnet_cidr_blocks)
+  count                                           = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 : length(var.vpc_settings.private_subnet_cidr_blocks)
   vpc_id                                          = aws_vpc.vpc.id
   cidr_block                                      = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? null : try(var.vpc_settings.private_subnet_cidr_blocks[count.index], null)
-  ipv6_cidr_block                                 = try(length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64[count.index]) : null)
+  ipv6_cidr_block                                 = try(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64[count.index]) : null)
   availability_zone                               = try(var.vpc_settings.availability_zones[count.index % length(var.vpc_settings.availability_zones)], null)
   enable_resource_name_dns_a_record_on_launch     = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? false : true
   enable_resource_name_dns_aaaa_record_on_launch  = var.vpc_settings.enable_aws_ipv6_cidr_block != {} ? true : false
@@ -110,7 +110,7 @@ resource "aws_route_table" "public" {
   }
 
   dynamic "route" {
-    for_each = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || length(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64) != 0 ? [1] : []
+    for_each = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? [1] : []
     content {
       cidr_block = "::/0"
       gateway_id = aws_egress_only_internet_gateway.gw[count.index].id
@@ -128,14 +128,14 @@ resource "aws_route_table_association" "public" {
 }
 
 resource "aws_route_table_association" "ipv6" {
-  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || length(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64) != 0 ? length(var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64) : 0
+  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 : 0
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public[0].id
 }
 
 
 resource "aws_route_table" "private" {
-  count  = var.vpc_settings.private_subnet_cidr_blocks == null && length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) == 0 ? 0 : var.vpc_settings.create_private_subnets_nat || length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) ? 1 : 0
+  count  = var.vpc_settings.private_subnet_cidr_blocks == null && var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 == 0 ? 0 : var.vpc_settings.create_private_subnets_nat || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 ? 1 : 0
   vpc_id = aws_vpc.vpc.id
 
   dynamic "route" {
@@ -170,7 +170,7 @@ resource "aws_route_table_association" "private" {
 }
 
 resource "aws_route_table_association" "ipv6_private" {
-  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) != 0 ? length(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64) : 0
+  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 : 0
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.public[0].id
 }

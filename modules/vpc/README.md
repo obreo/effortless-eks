@@ -26,25 +26,43 @@ module "vpc" {
     }
   }
   security_groups = {
-    name        = optional(string)
-    description = optional(string)
-    tags       = optional(map(string))
+    "security_group_1" = {
+      name        = optional(string)
+      description = optional(string)
+      tags       = optional(map(string))
 
-    inbound = {
-      rule_description = optional(string)
-      ports = optional(list(number)) # The ports to allow inbound traffic
-      ip_protocol = optional(string, "tcp") # The protocol to allow (e.g., tcp, udp)
-      destination = {
-          cidr_ipv4      = optional(string)
-          cidr_ipv6      = optional(string)
-          security_group = optional(string)
-          prefix_list_id = optional(string)
+      inbound = {
+        rule_description = optional(string)
+        ports = optional(list(number)) # The ports to allow inbound traffic
+        ip_protocol = optional(string, "tcp") # The protocol to allow (e.g., tcp, udp)
+        destination = {
+            cidr_ipv4      = optional(string)
+            cidr_ipv6      = optional(string)
+            security_group = optional(string)
+            prefix_list_id = optional(string)
+        }
       }
     }
-   }
+
+    "security_group_2" = {
+      name        = optional(string)
+      description = optional(string)
+      tags       = optional(map(string))
+
+      inbound = {
+        rule_description = optional(string)
+        ports = optional(list(number)) # The ports to allow inbound traffic
+        ip_protocol = optional(string, "tcp") # The protocol to allow (e.g., tcp, udp)
+        destination = {
+            cidr_ipv4      = optional(string)
+            cidr_ipv6      = optional(string)
+            security_group = optional(string)
+            prefix_list_id = optional(string)
+        }
+      }
+    }
   }
 }
-
 ```
 
 # OUTPUTS

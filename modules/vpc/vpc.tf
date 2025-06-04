@@ -1,7 +1,7 @@
 # VPC
 resource "aws_vpc" "vpc" {
   cidr_block           = try(var.vpc_settings.vpc_cidr_block, "")
-  assign_generated_ipv6_cidr_block = try(var.vpc_settings.enable_aws_ipv6_cidr_block, false)
+  assign_generated_ipv6_cidr_block = try(var.vpc_settings.enable_aws_ipv6_cidr_block != {} ? true : false, false)
   enable_dns_support   = true
   enable_dns_hostnames = try(var.vpc_settings.enable_dns_hostnames != {} ? true: false)
   tags = {
@@ -86,7 +86,7 @@ resource "aws_nat_gateway" "public" {
   depends_on = [aws_internet_gateway.gw[0]]
 
   lifecycle {
-    ignore_changes = [allocation_id, public_ip]
+    ignore_changes = [allocation_id]
   }
 }
 

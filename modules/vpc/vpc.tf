@@ -1,7 +1,7 @@
 # VPC
 resource "aws_vpc" "vpc" {
   cidr_block           = try(var.vpc_settings.vpc_cidr_block, "")
-  assign_generated_ipv6_cidr_block = var.vpc_settings.enable_aws_ipv6_cidr_block != null ? true : false
+  assign_generated_ipv6_cidr_block = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native == true || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? true : false
   enable_dns_support   = true
   enable_dns_hostnames = try(var.vpc_settings.enable_dns_hostnames != {} ? true: false)
   tags = {

@@ -9,22 +9,48 @@ variable "vpc_settings" {
     private_subnet_cidr_blocks = optional(list(string))
     create_private_subnets_nat = optional(bool, true)
     availability_zones         = optional(list(string))
-    security_group = optional(object({
-      ports       = optional(list(number))
-      ip_protocol = optional(string, "tcp")
-      source = optional(object({
-        cidr_ipv4      = optional(string)
-        cidr_ipv6      = optional(string)
-        security_group = optional(string)
-        prefix_list_id = optional(string)
-      }))
-      ssh_port = optional(object({
-        cidr_ipv4 = optional(string)
-      }))
-    }))
+    enable_dns_hostnames        = optional(bool, true)
+
     include_eks_tags = optional(object({
       cluster_name    = optional(string)
       shared_or_owned = optional(string, "owned")
     }))
+
+    enable_aws_ipv6_cidr_block = optional(object({
+      public_cidr_count_prefix64 = optional(number, 0)
+      private_cidr_count_prefix64 = optional(number, 0)
+      ipv6_native  = optional(bool, false)
+
+    }))
+
   })
 }
+    # Security Group
+variable "security_groups" {
+  type = map(object({
+    name        = optional(string)
+    description = optional(string)
+    tags       = optional(map(string))
+
+    inbound = optional(object({
+      rule_description = optional(string)
+      ports = optional(list(number)) # The ports to allow inbound traffic
+      ip_protocol = optional(string, "tcp") # The protocol to allow (e.g., tcp, udp)
+      destination = optional(object({
+          cidr_ipv4      = optional(string)
+          cidr_ipv6      = optional(string)
+          security_group = optional(string)
+          prefix_list_id = optional(string)
+      }))     
+
+      #enable_ssh_inbound = optional(object({
+      #  cidr_ipv4 = optional(string)
+      #  cidr_ipv6      = optional(string)
+      #  security_group = optional(string)
+      #  prefix_list_id = optional(string)
+      #}))
+    }))
+  }))
+}
+
+

@@ -85,7 +85,7 @@ module "eks" {
       vpc_id = module.vpc.vpc_id
     }
     rancher = {
-      host                 = ""
+      host = ""
     }
   }
   depends_on = [module.vpc]

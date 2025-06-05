@@ -135,7 +135,7 @@ resource "aws_route_table_association" "ipv6" {
 
 
 resource "aws_route_table" "private" {
-  count  = var.vpc_settings.private_subnet_cidr_blocks == null && var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 == 0 ? 0 : var.vpc_settings.create_private_subnets_nat || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 ? 1 : 0
+  count  = var.vpc_settings.private_subnet_cidr_blocks != null || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? 1 : 0
   vpc_id = aws_vpc.vpc.id
 
   dynamic "route" {
@@ -191,52 +191,37 @@ resource "aws_security_group" "cluster" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "dynamic_ingress" {
-  #count                        = var.vpc_settings.security_group.ports == null ? 0 : length(var.vpc_settings.vpc_cidr_block) > 0 ? length(var.vpc_settings.security_group.ports) : 0
-  for_each = flatten([
-    for sg_key, sg_value in var.security_groups : [
-      for port in sg_value.inbound.ports : {
-        sg_key       = sg_key
-        port         = port
-        #ip_protocol  = sg_value.inbound.ip_protocol != null ? sg_value.inbound.ip_protocol : "tcp"
-        #destination  = sg_value.inbound.destination != null ? sg_value.inbound.destination : {
-        #  cidr_ipv4      = null
-        #  cidr_ipv6      = null
-        #  security_group = null
-        #  prefix_list_id = null
-        #}
-        #description = sg_value.inbound.rule_description != null ? sg_value.inbound.rule_description : "Allows ports to ${var.name}"
-        ip_protocol = try(sg_value.inbound.ip_protocol, "tcp")
-        destination = try(sg_value.inbound.destination, {
-          cidr_ipv4      = null
-          cidr_ipv6      = null
-          security_group = null
-          prefix_list_id = null
-        })
-        description = try(sg_value.inbound.rule_description, "Allows ports to ${var.name}")
-      }
-    ]
-  ])
+  for_each = {
+    for idx, item in flatten([
+      for sg_key, sg_value in var.security_groups : [
+        for port in sg_value.inbound.ports : {
+          sg_key       = sg_key
+          port         = port
+          ip_protocol = try(sg_value.inbound.ip_protocol, "tcp")
+          destination = try(sg_value.inbound.destination, {
+            cidr_ipv4      = null
+            cidr_ipv6      = null
+            security_group = null
+            prefix_list_id = null
+          })
+          description = try(sg_value.inbound.rule_description, "Allows ports to ${var.name}")
+        }
+      ]
+    ]) : "${item.sg_key}-${item.port}" => item
+  }
 
-  security_group_id            = aws_security_group.cluster[each.value.sg_key].id
-  ip_protocol                  = each.value.ip_protocol # try(var.vpc_settings.security_group.ip_protocol, "tcp")
-  from_port                    = each.value.port # try(var.vpc_settings.security_group.ports[count.index], 0)
-  to_port                      = each.value.port # try(var.vpc_settings.security_group.ports[count.index], 0)
-  cidr_ipv4                    = each.value.destination.cidr_ipv4 # var.vpc_settings.security_group.source.cidr_ipv4 != null ? var.vpc_settings.security_group.source.cidr_ipv4 : null
-  cidr_ipv6                    = each.value.destination.cidr_ipv6 # var.vpc_settings.security_group.source.cidr_ipv6 != null ? var.vpc_settings.security_group.source.cidr_ipv6 : null
-  referenced_security_group_id = each.value.destination.security_group # var.vpc_settings.security_group.source.security_group != null ? var.vpc_settings.security_group.source.security_group : aws_security_group.cluster[count.index].id
-  prefix_list_id               = each.value.destination.prefix_list_id # var.vpc_settings.security_group.source.prefix_list_id != null ? var.vpc_settings.security_group.source.prefix_list_id : null
+    security_group_id            = aws_security_group.cluster[each.value.sg_key].id
+    ip_protocol                  = each.value.ip_protocol # try(var.vpc_settings.security_group.ip_protocol, "tcp")
+    from_port                    = each.value.port # try(var.vpc_settings.security_group.ports[count.index], 0)
+    to_port                      = each.value.port # try(var.vpc_settings.security_group.ports[count.index], 0)
+    cidr_ipv4                    = each.value.destination.cidr_ipv4 # var.vpc_settings.security_group.source.cidr_ipv4 != null ? var.vpc_settings.security_group.source.cidr_ipv4 : null
+    cidr_ipv6                    = each.value.destination.cidr_ipv6 # var.vpc_settings.security_group.source.cidr_ipv6 != null ? var.vpc_settings.security_group.source.cidr_ipv6 : null
+    referenced_security_group_id = each.value.destination.security_group # var.vpc_settings.security_group.source.security_group != null ? var.vpc_settings.security_group.source.security_group : aws_security_group.cluster[count.index].id
+    prefix_list_id               = each.value.destination.prefix_list_id # var.vpc_settings.security_group.source.prefix_list_id != null ? var.vpc_settings.security_group.source.prefix_list_id : null
 
 }
-/*resource "aws_vpc_security_group_ingress_rule" "ssh_node" {
-  count             = var.vpc_settings.security_group.ssh_port.cidr_ipv4 == null ? 0 : length(var.vpc_settings.vpc_cidr_block) > 0 ? 1 : 0
-  security_group_id = aws_security_group.cluster[count.index].id
-  cidr_ipv4         = try(var.vpc_settings.security_group.ssh_port.cidr_ipv4, "0.0.0.0/0")
-  from_port         = 22
-  ip_protocol       = "tcp"
-  to_port           = 22
-}
-*/
-# Outbound
+
+
 resource "aws_vpc_security_group_egress_rule" "cluster" {
   for_each = var.security_groups
   security_group_id = aws_security_group.cluster[each.key].id

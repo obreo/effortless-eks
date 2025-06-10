@@ -216,9 +216,8 @@ resource "aws_vpc_security_group_ingress_rule" "dynamic_ingress" {
     to_port                      = each.value.port # try(var.vpc_settings.security_group.ports[count.index], 0)
     cidr_ipv4                    = each.value.destination.cidr_ipv4 # var.vpc_settings.security_group.source.cidr_ipv4 != null ? var.vpc_settings.security_group.source.cidr_ipv4 : null
     cidr_ipv6                    = each.value.destination.cidr_ipv6 # var.vpc_settings.security_group.source.cidr_ipv6 != null ? var.vpc_settings.security_group.source.cidr_ipv6 : null
-    referenced_security_group_id = each.value.destination.security_group # var.vpc_settings.security_group.source.security_group != null ? var.vpc_settings.security_group.source.security_group : aws_security_group.cluster[count.index].id
+    referenced_security_group_id = try(aws_security_group.cluster[each.value.destination.security_group].id,each.value.destination.security_group) # each.value.destination.security_group # var.vpc_settings.security_group.source.security_group != null ? var.vpc_settings.security_group.source.security_group : aws_security_group.cluster[count.index].id
     prefix_list_id               = each.value.destination.prefix_list_id # var.vpc_settings.security_group.source.prefix_list_id != null ? var.vpc_settings.security_group.source.prefix_list_id : null
-
 }
 
 

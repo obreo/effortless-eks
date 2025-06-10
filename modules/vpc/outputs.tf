@@ -1,5 +1,5 @@
 # Security groups:
-output "cluster_security_group_id" {
+output "security_group_ids" {
   value = {for k, v in aws_security_group.cluster : k => v.id} #data.aws_security_groups.cluster.id
 }
 output "public_subnet_cidr_blocks" {

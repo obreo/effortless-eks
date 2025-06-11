@@ -127,7 +127,7 @@ resource "aws_route_table_association" "public" {
     || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0
   ) ? max(
     var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64,
-    length(var.vpc_settings.public_subnet_cidr_blocks)
+    try(length(var.vpc_settings.public_subnet_cidr_blocks), 0),
   ) : length(var.vpc_settings.public_subnet_cidr_blocks)
 
   subnet_id      = aws_subnet.public[count.index].id
@@ -225,5 +225,12 @@ resource "aws_vpc_security_group_egress_rule" "cluster" {
   for_each = var.security_groups
   security_group_id = aws_security_group.cluster[each.key].id
   cidr_ipv4         = "0.0.0.0/0"
+  ip_protocol       = "-1" # semantically equivalent to all ports
+}
+
+resource "aws_vpc_security_group_egress_rule" "cluster" {
+  for_each = var.security_groups
+  security_group_id = aws_security_group.cluster[each.key].id
+  cidr_ipv6         = "::/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }

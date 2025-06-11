@@ -34,8 +34,13 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   count                                           = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 : length(var.vpc_settings.private_subnet_cidr_blocks)
   vpc_id                                          = aws_vpc.vpc.id
-  cidr_block                                      = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || length(var.vpc_settings.private_subnet_cidr_blocks) == 0 ? null : var.vpc_settings.private_subnet_cidr_blocks[count.index]
-  ipv6_cidr_block                                 = try(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, count.index) : "")
+  dynamic "cidr_block" {
+    for_each = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native  || length(var.vpc_settings.private_subnet_cidr_blocks) == 0 ? [] : [1]
+    content {
+      cidr_block = var.vpc_settings.private_subnet_cidr_blocks[count.index]
+    }
+  }
+  ipv6_cidr_block                                 = try(var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? cidrsubnet(aws_vpc.vpc.ipv6_cidr_block, 8, count.index) : null)
   availability_zone                               = try(var.vpc_settings.availability_zones[count.index % length(var.vpc_settings.availability_zones)], null)
   enable_resource_name_dns_a_record_on_launch     = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? false : true
   enable_resource_name_dns_aaaa_record_on_launch  = var.vpc_settings.enable_aws_ipv6_cidr_block != {} ? true : false

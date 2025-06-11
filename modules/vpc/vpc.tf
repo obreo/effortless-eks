@@ -99,7 +99,7 @@ resource "aws_eip" "one" {
 
 # ROUTE TABLE
 resource "aws_route_table" "public" {
-  count  = var.vpc_settings.public_subnet_cidr_blocks != null || var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? 1 : 0
+  count  = var.vpc_settings.public_subnet_cidr_blocks != null || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? 1 : 0
   vpc_id = aws_vpc.vpc.id
   dynamic "route" {
     for_each = var.vpc_settings.public_subnet_cidr_blocks != null ? [1] : []
@@ -122,14 +122,9 @@ resource "aws_route_table" "public" {
   }
 }
 resource "aws_route_table_association" "public" {
-  count          = var.vpc_settings.public_subnet_cidr_blocks != null ? length(var.vpc_settings.public_subnet_cidr_blocks) : 0
-  subnet_id      = aws_subnet.public[count.index].id
-  route_table_id = aws_route_table.public[0].id
-}
-
-resource "aws_route_table_association" "ipv6" {
-  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 : 0
-  subnet_id      = aws_subnet.public[count.index].id
+ # count          = var.vpc_settings.public_subnet_cidr_blocks != null ? length(var.vpc_settings.public_subnet_cidr_blocks) : 0
+  for_each = aws_subnet.public
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public[0].id
 }
 
@@ -164,16 +159,12 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = var.vpc_settings.private_subnet_cidr_blocks == null ? 0 : var.vpc_settings.create_private_subnets_nat ? length(var.vpc_settings.private_subnet_cidr_blocks) : 0
-  subnet_id      = aws_subnet.private[count.index].id
+  #count          = var.vpc_settings.private_subnet_cidr_blocks == null ? 0 : var.vpc_settings.create_private_subnets_nat ? length(var.vpc_settings.private_subnet_cidr_blocks) : 0
+  for_each = aws_subnet.private
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private[0].id
 }
 
-resource "aws_route_table_association" "ipv6_private" {
-  count          = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0 ? var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 : 0
-  subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.public[0].id
-}
 
 
 # SECURITY GROUP

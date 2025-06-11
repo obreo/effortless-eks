@@ -5,8 +5,8 @@ variable "name" {
 variable "vpc_settings" {
   type = object({
     vpc_cidr_block             = string
-    public_subnet_cidr_blocks  = optional(list(string))
-    private_subnet_cidr_blocks = optional(list(string))
+    public_subnet_cidr_blocks  = optional(list(string),[])
+    private_subnet_cidr_blocks = optional(list(string),[])
     create_private_subnets_nat = optional(bool, true)
     availability_zones         = optional(list(string))
     enable_dns_hostnames        = optional(bool, true)

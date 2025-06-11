@@ -26,6 +26,7 @@ module "vpc" {
     }
   }
   security_groups = {
+    # Key(security group name) = Value (specifications)
     "security_group_1" = {
       name        = optional(string)
       description = optional(string)

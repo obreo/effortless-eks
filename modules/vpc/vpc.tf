@@ -40,7 +40,7 @@ resource "aws_subnet" "private" {
   enable_resource_name_dns_a_record_on_launch     = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? false : true
   enable_resource_name_dns_aaaa_record_on_launch  = var.vpc_settings.enable_aws_ipv6_cidr_block != {} ? true : false
   map_public_ip_on_launch                         = false
-  ipv6_native                                     = try(var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native, false)
+  ipv6_native                                     = length(var.vpc_settings.private_subnet_cidr_blocks) == 0 || var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native ? true : false
   tags = merge(
     {
       Name = "${var.name}-private"

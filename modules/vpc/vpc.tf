@@ -123,7 +123,7 @@ resource "aws_route_table" "public" {
 }
 resource "aws_route_table_association" "public" {
  # count          = var.vpc_settings.public_subnet_cidr_blocks != null ? length(var.vpc_settings.public_subnet_cidr_blocks) : 0
-  for_each = aws_subnet.public[*].id
+  for_each = toset(aws_subnet.public[*].id)
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public[0].id
 }
@@ -160,7 +160,7 @@ resource "aws_route_table" "private" {
 
 resource "aws_route_table_association" "private" {
   #count          = var.vpc_settings.private_subnet_cidr_blocks == null ? 0 : var.vpc_settings.create_private_subnets_nat ? length(var.vpc_settings.private_subnet_cidr_blocks) : 0
-  for_each = aws_subnet.private[*].id
+  for_each = toset(aws_subnet.private[*].id)
   subnet_id      = each.value.id
   route_table_id = aws_route_table.private[0].id
 }

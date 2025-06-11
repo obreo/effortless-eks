@@ -169,7 +169,7 @@ resource "aws_route_table_association" "private" {
     || var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != 0
   ) ? max(
     var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64,
-    length(var.vpc_settings.private_subnet_cidr_blocks)
+    try(length(var.vpc_settings.private_subnet_cidr_blocks), 0)
   ) : length(var.vpc_settings.private_subnet_cidr_blocks)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[0].id

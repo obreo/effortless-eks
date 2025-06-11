@@ -112,7 +112,7 @@ resource "aws_route_table" "public" {
   dynamic "route" {
     for_each = var.vpc_settings.enable_aws_ipv6_cidr_block.ipv6_native || var.vpc_settings.enable_aws_ipv6_cidr_block.public_cidr_count_prefix64 != 0 ? [1] : []
     content {
-      cidr_block = "::/0"
+      ipv6_cidr_block  = "::/0"
       gateway_id = aws_egress_only_internet_gateway.egw[count.index].id
     }
   }
@@ -141,7 +141,7 @@ resource "aws_route_table" "private" {
   dynamic "route" {
   for_each = var.vpc_settings.enable_aws_ipv6_cidr_block.private_cidr_count_prefix64 != null ? [1] : []
     content {
-      cidr_block = "::/0"
+      ipv6_cidr_block         = "::/0"
       gateway_id = aws_egress_only_internet_gateway.egw[count.index].id
     }
   }

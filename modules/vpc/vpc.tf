@@ -228,7 +228,7 @@ resource "aws_vpc_security_group_egress_rule" "cluster" {
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
 
-resource "aws_vpc_security_group_egress_rule" "cluster" {
+resource "aws_vpc_security_group_egress_rule" "cluster_ipv6" {
   for_each = var.security_groups
   security_group_id = aws_security_group.cluster[each.key].id
   cidr_ipv6         = "::/0"

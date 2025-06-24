@@ -15,7 +15,7 @@ resource "helm_release" "metrics_server" {
   chart           = "metrics-server"
   force_update    = true
   cleanup_on_fail = true
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values          = var.plugins.metrics_server.values != null ? var.plugins.metrics_server.values : []
 
 
@@ -45,7 +45,7 @@ resource "helm_release" "cluster_autoscaler" {
   namespace       = "kube-system"
   force_update    = true
   cleanup_on_fail = true
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values          = var.plugins.cluster_autoscaler.values != null ? var.plugins.cluster_autoscaler.values : []
 
 
@@ -81,7 +81,7 @@ resource "helm_release" "calico_cni" {
   chart           = "projectcalico"
   force_update    = true
   cleanup_on_fail = true
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values = var.plugins.calico_cni.values != null ? var.plugins.calico_cni.values : [<<EOF
     installation:
     kubernetesProvider: EKS
@@ -106,7 +106,7 @@ resource "helm_release" "argo_cd" {
   chart           = "argocd-apps"
   force_update    = true
   cleanup_on_fail = true
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values          = var.plugins.argo_cd.values == null ? [] : var.plugins.argo_cd.values
   depends_on      = [time_sleep.wait_for_node, aws_eks_cluster.cluster, aws_eks_node_group.node, aws_eks_addon.kube-proxy, aws_eks_addon.vpc-cni, helm_release.calico_cni, aws_eks_addon.coredns, helm_release.metrics_server]
 }
@@ -121,7 +121,7 @@ resource "helm_release" "loki" {
   create_namespace = true
   force_update     = true
   cleanup_on_fail  = true
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.loki.values == null ? [] : var.plugins.loki.values
   depends_on = [
     time_sleep.wait_for_node,
@@ -147,7 +147,7 @@ resource "helm_release" "prometheus" {
   create_namespace = true
   force_update     = true
   cleanup_on_fail  = true
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.prometheus.values == null ? [] : var.plugins.prometheus.values
 
   set {
@@ -179,7 +179,7 @@ resource "helm_release" "aws_alb_controller" {
   force_update    = true
   cleanup_on_fail = true
   timeout         = 1200
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   wait_for_jobs   = true
   values          = var.plugins.aws_alb_controller.values == null ? [] : var.plugins.aws_alb_controller.values
 
@@ -227,7 +227,7 @@ resource "helm_release" "nginx" {
   force_update     = true
   cleanup_on_fail  = true
   timeout          = 1200
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.nginx_controller.values == null ? [] : var.plugins.nginx_controller.values
   # Ingress Class Configuration
   set {
@@ -303,7 +303,7 @@ resource "helm_release" "cert_manager" {
   create_namespace = true
   force_update     = true
   cleanup_on_fail  = true
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.cert_manager.values == null ? [] : var.plugins.cert_manager.values
 
   set {
@@ -339,7 +339,7 @@ resource "helm_release" "secrets_store_csi_driver" {
   repository = "https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts"
   chart      = "secrets-store-csi-driver"
   namespace  = "kube-system"
-  wait       = var.plugins.dont_wait ? false : true
+  wait       = var.plugins.dont_wait_for_helm_install ? false : true
   values     = var.plugins.secrets_store_csi_driver.values == null ? [] : var.plugins.secrets_store_csi_driver.values
 
   set {
@@ -367,7 +367,7 @@ resource "helm_release" "aws_secrets_store_csi_driver" {
   namespace       = "kube-system"
   force_update    = true
   cleanup_on_fail = true
-  wait            = var.plugins.dont_wait ? false : true
+  wait            = var.plugins.dont_wait_for_helm_install ? false : true
   depends_on = [
     time_sleep.wait_for_node,
     aws_eks_cluster.cluster,
@@ -393,7 +393,7 @@ resource "helm_release" "external_secrets" {
   force_update     = true
   cleanup_on_fail  = true
   create_namespace = true
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.external_secrets.values == null ? [] : var.plugins.external_secrets.values
 
   set {
@@ -414,7 +414,7 @@ resource "helm_release" "kubernetes_dashboard" {
   force_update     = true
   cleanup_on_fail  = true
   values           = var.plugins.kubernetes_dashboard.values == null ? [] : var.plugins.kubernetes_dashboard.values
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   set {
     name  = "app.ingress.enabled"
     value = "true"
@@ -458,7 +458,7 @@ resource "helm_release" "rancher" {
   cleanup_on_fail  = true
   disable_webhooks = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
-  wait             = var.plugins.dont_wait ? false : true
+  wait             = var.plugins.dont_wait_for_helm_install ? false : true
   set {
     name  = "hostname"
     value = var.plugins.rancher.host

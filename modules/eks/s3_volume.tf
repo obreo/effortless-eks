@@ -1,6 +1,6 @@
 # Create an S3 bucket where the application's zip file shall be stored.
 resource "aws_s3_bucket" "bucket" {
-  count = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
+  count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
 
   bucket        = "${var.metadata.name}-eks-driver"
   force_destroy = true
@@ -8,7 +8,7 @@ resource "aws_s3_bucket" "bucket" {
 
 # Bucket policy
 resource "aws_s3_bucket_policy" "allow_access" {
-  count  = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
+  count  = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
   bucket = aws_s3_bucket.bucket[count.index].id
   policy = data.aws_iam_policy_document.allow_access.json
 }
@@ -21,7 +21,9 @@ data "aws_iam_policy_document" "allow_access" {
 
     actions = [
       "s3:ListBucket",
-      "s3:GetObject"
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:DeleteObject"
     ]
 
     resources = [
@@ -34,7 +36,7 @@ data "aws_iam_policy_document" "allow_access" {
 # Doc:https://medium.com/bestcloudforme/managing-persistent-storage-with-amazon-s3-on-amazon-eks-9c2185817e83
 # Doc: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/storage_class_v1
 resource "kubernetes_storage_class_v1" "s3" {
-  count = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
+  count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
   metadata {
     name = "s3-csi"
   }
@@ -53,4 +55,17 @@ resource "kubernetes_storage_class_v1" "s3" {
     aws_eks_addon.aws-mountpoint-s3-csi-driver,
     aws_s3_bucket.bucket
   ]
+}
+
+
+# Create VPC endpoint for S3
+data "aws_subnet" "selected" {
+  count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint != null ? 1 : 0
+  id = var.cluster_settings.cluster_subnet_ids[0]
+}
+resource "aws_vpc_endpoint" "s3" {
+  count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint != null ? 1 : 0
+  vpc_id       = data.aws_subnet.selected.vpc_id
+  service_name = var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region != "" ? "com.amazonaws.${ var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region}.s3" : "com.amazonaws.${var.metadata.region}.s3"
+  route_table_ids = var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids != [] ? var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids : []
 }

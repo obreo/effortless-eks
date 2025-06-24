@@ -87,7 +87,7 @@ module "eks" {
   }
 
   plugins = { # Optional, used as `argument = {}`
-    dont_wait           = bool # Optional, defaults to true
+    dont_wait_for_helm_install           = bool # Optional, defaults to true
     create_ecr_registry = bool # Optional, defaults to false
     cluster_autoscaler = {
       values = list(string) # Optional, e.g [<<EOF...EOF]

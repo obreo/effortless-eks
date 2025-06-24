@@ -87,17 +87,14 @@ resource "aws_iam_group_policy" "admin_group" {
 # Custom group:
 # 1. Role Policy
 resource "aws_iam_role_policy" "custom_group" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.create_eks_custom_access_iam_group == false ? 0 : 1
+  count = var.cluster_settings == null ? 0 : length(var.cluster_settings.create_eks_custom_access_iam_group) == 0 ? 0 : 1
   name  = "${var.metadata.environment}-${var.metadata.name}-custom-group"
   role  = aws_iam_role.custom_group[count.index].id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Action = [
-          "eks:DescribeCluster",
-          "eks:ListClusters"
-        ]
+        Action = var.cluster_settings.create_eks_custom_access_iam_group
         Effect   = "Allow"
         Resource = "${aws_eks_cluster.cluster[count.index].arn}"
       }
@@ -108,7 +105,7 @@ resource "aws_iam_role_policy" "custom_group" {
 # 2. Role
 ## Write the role
 resource "aws_iam_role" "custom_group" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.create_eks_custom_access_iam_group == false ? 0 : 1
+  count = var.cluster_settings == null ? 0 : length(var.cluster_settings.create_eks_custom_access_iam_group) == 0 ? 0 : 1
   name  = "${var.metadata.environment}-${var.metadata.name}-custom-group"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -134,7 +131,7 @@ resource "aws_iam_role" "custom_group" {
 
 # 3. EKS Role Access Association
 resource "aws_eks_access_entry" "custom_group" {
-  count             = var.cluster_settings == null ? 0 : var.cluster_settings.create_eks_custom_access_iam_group == false ? 0 : 1
+  count = var.cluster_settings == null ? 0 : length(var.cluster_settings.create_eks_custom_access_iam_group) == 0 ? 0 : 1
   cluster_name      = aws_eks_cluster.cluster[count.index].name
   principal_arn     = aws_iam_role.custom_group[count.index].arn
   kubernetes_groups = ["limited-access-group"]
@@ -142,12 +139,12 @@ resource "aws_eks_access_entry" "custom_group" {
 ######
 # 1. IAM Users Group
 resource "aws_iam_group" "custom_group" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.create_eks_custom_access_iam_group == false ? 0 : 1
+  count = var.cluster_settings == null ? 0 : length(var.cluster_settings.create_eks_custom_access_iam_group) == 0 ? 0 : 1
   name  = "${var.metadata.name}-custom-group"
 }
 # 2. Assume role policy:
 resource "aws_iam_group_policy" "custom_group" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.create_eks_custom_access_iam_group == false ? 0 : 1
+  count = var.cluster_settings == null ? 0 : length(var.cluster_settings.create_eks_custom_access_iam_group) == 0 ? 0 : 1
   name  = "${var.metadata.environment}-${var.metadata.name}-assume-policy"
   group = aws_iam_group.custom_group[count.index].name
 

@@ -18,18 +18,19 @@ variable "cluster_settings" {
     enable_endpoint_public_access            = optional(bool, true)  # Default to true
     enable_endpoint_private_access           = optional(bool, false) # Default to false
     create_eks_admin_access_iam_group        = optional(bool, false)
-    create_eks_custom_access_iam_group       = optional(bool, false)
+    create_eks_custom_access_iam_group       = optional(list(string), []) # Default to an empty list, else fill with EKS policies names. e.g "eks:listClusters"
 
     enable_logging = optional(object({
       api               = optional(bool, false) # Default to false
       audit             = optional(bool, false) # Default to false
       authenticator     = optional(bool, false) # Default to false
       controllerManager = optional(bool, false) # Default to false
-      scheduler         = optional(bool, false) # Default to true
+      scheduler         = optional(bool, false) # Default to false
+      retention_in_days = optional(number, 3) # Default to 3 days
     }))
 
     addons = optional(object({
-      vpc_cni                         = optional(bool, false)
+      vpc_cni                         = optional(bool, true)
       eks_pod_identity_agent          = optional(bool, true)
       snapshot_controller             = optional(bool, false)
       aws_guardduty_agent             = optional(bool, false)
@@ -48,7 +49,11 @@ variable "cluster_settings" {
       }))
       aws_mountpoint_s3_csi_driver = optional(object({
         enable        = optional(bool, false)
-        s3_bucket_arn = optional(string, "")
+        s3_bucket_arn = optional(string, "") # Default to empty string, if not set, it will create a new bucket
+        create_vpc_endpoint = optional(object({
+          route_table_ids=optional(list(string), []) # Default to an empty list
+          bucket_region = optional(string, "") # default to the region of EKS cluster
+          }))
       }))
     }))
   })
@@ -101,7 +106,7 @@ variable "fargate_profile" {
 variable "plugins" {
   type = object({
     create_ecr_registry = optional(bool, false)
-    dont_wait           = optional(bool, true)
+    dont_wait_for_helm_install = optional(bool, true)
     cluster_autoscaler = optional(object({
       values = optional(list(string), [])
     }))

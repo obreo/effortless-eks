@@ -13,3 +13,11 @@ output "private_subnet_cidr_blocks" {
 output "vpc_id" {
   value = aws_vpc.vpc.id # Replace with the actual resource type
 }
+
+output "public_route_table_id" {
+  value = aws_route_table.public[0].id # Replace with the actual resource type
+}
+
+output "private_route_table_id" {
+  value = aws_route_table.public[0].id # Replace with the actual resource type
+}

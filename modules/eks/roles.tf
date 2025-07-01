@@ -153,7 +153,7 @@ resource "aws_iam_role_policy_attachment" "aws_ebs_csi_driver" {
 ## 3. aws_efs_csi_driver
 ### Role
 resource "aws_iam_role" "aws_efs_csi_driver" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable != null ? 1 : 0
+  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
   name  = "${var.metadata.name}-aws-efs-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"

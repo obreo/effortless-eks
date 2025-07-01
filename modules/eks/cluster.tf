@@ -18,7 +18,7 @@ resource "aws_eks_cluster" "cluster" {
     subnet_ids              = var.cluster_settings.cluster_subnet_ids
     endpoint_private_access = try(var.cluster_settings.enable_endpoint_private_access, false)
     endpoint_public_access  = try(var.cluster_settings.enable_endpoint_public_access, true)
-    public_access_cidrs     = try(length(var.cluster_settings.allowed_cidrs_to_access_cluster_publicly), ["0.0.0.0/0"])
+    public_access_cidrs     = toset(try(var.cluster_settings.allowed_cidrs_to_access_cluster_publicly, ["0.0.0.0/0"]))
     security_group_ids      = try(var.cluster_settings.security_group_ids, [])
   }
 

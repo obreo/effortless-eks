@@ -66,7 +66,7 @@ data "aws_iam_policy_document" "policy" {
 resource "aws_efs_file_system_policy" "policy" {
   count          = var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   file_system_id = aws_efs_file_system.eks[count.index].id
-  policy         = data.aws_iam_policy_document.policy.json
+  policy         = data.aws_iam_policy_document.policy[count.index].json
   depends_on = [
     aws_eks_addon.eks_pod_identity_agent,
     aws_eks_cluster.cluster,

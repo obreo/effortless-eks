@@ -436,7 +436,7 @@ resource "helm_release" "kubernetes_dashboard" {
       for id_key, id_value in var.plugins.kubernetes_dashboard.hosts :
         {
           name  = "app.ingress.hosts[${id_key}]"
-          value = set.id_value
+          value = id_value
         }
     ]
   ])    

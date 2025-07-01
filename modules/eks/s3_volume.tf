@@ -65,7 +65,7 @@ data "aws_subnet" "selected" {
 }
 resource "aws_vpc_endpoint" "s3" {
   count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint != null ? 1 : 0
-  vpc_id       = data.aws_subnet.selected.vpc_id
+  vpc_id       = data.aws_subnet.selected[count.index].vpc_id
   service_name = var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region != "" ? "com.amazonaws.${ var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region}.s3" : "com.amazonaws.${var.metadata.region}.s3"
   route_table_ids = var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids != [] ? var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids : []
 }

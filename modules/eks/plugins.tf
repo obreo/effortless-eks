@@ -18,11 +18,13 @@ resource "helm_release" "metrics_server" {
   wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values          = var.plugins.metrics_server.values != null ? var.plugins.metrics_server.values : []
 
+  set = [
+    {
+      name  = "containerPort"
+      value = "10250"
+    }
+  ]
 
-  set {
-    name  = "containerPort"
-    value = "10250"
-  }
 
   depends_on = [
     aws_eks_cluster.cluster,
@@ -47,20 +49,20 @@ resource "helm_release" "cluster_autoscaler" {
   cleanup_on_fail = true
   wait            = var.plugins.dont_wait_for_helm_install ? false : true
   values          = var.plugins.cluster_autoscaler.values != null ? var.plugins.cluster_autoscaler.values : []
-
-
-  set {
-    name  = "autoDiscovery.clusterName"
-    value = aws_eks_cluster.cluster[count.index].name
-  }
-  set {
-    name  = "rbac.serviceAccount.name"
-    value = "cluster-autoscaler"
-  }
-  set {
-    name  = "awsRegion"
-    value = var.metadata.region
-  }
+  set = [
+    {
+      name  = "autoDiscovery.clusterName"
+      value = aws_eks_cluster.cluster[count.index].name
+    },
+    {
+      name  = "rbac.serviceAccount.name"
+      value = "cluster-autoscaler"
+    },
+    {
+      name  = "awsRegion"
+      value = var.metadata.region
+    }
+  ]
 
   depends_on = [
     time_sleep.wait_for_node,
@@ -150,10 +152,12 @@ resource "helm_release" "prometheus" {
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.prometheus.values == null ? [] : var.plugins.prometheus.values
 
-  set {
-    name  = "serverFiles.\"prometheus\\.yml\".scrape_configs[0].static_configs[0].targets"
-    value = "prometheus-operated.monitoring.svc.cluster.local:9090"
-  }
+  set = [
+    {
+      name  = "serverFiles.\"prometheus\\.yml\".scrape_configs[0].static_configs[0].targets"
+      value = "prometheus-operated.monitoring.svc.cluster.local:9090"
+    }
+  ]
   depends_on = [
     time_sleep.wait_for_node,
     helm_release.metrics_server,
@@ -183,22 +187,24 @@ resource "helm_release" "aws_alb_controller" {
   wait_for_jobs   = true
   values          = var.plugins.aws_alb_controller.values == null ? [] : var.plugins.aws_alb_controller.values
 
-  set {
-    name  = "clusterName"
-    value = aws_eks_cluster.cluster[0].name
-  }
-  set {
+  set = [
+    {
+      name  = "clusterName"
+      value = aws_eks_cluster.cluster[0].name
+    },
+    {
     name  = "serviceAccount.name"
     value = "aws-load-balancer-controller"
-  }
-  set {
+    },
+    {
     name  = "region"
     value = var.metadata.region
-  }
-  set {
+    },
+    {
     name  = "vpcId"
     value = var.plugins.aws_alb_controller.vpc_id # or however you reference your VPC ID
-  }
+    }
+  ]
 
   depends_on = [
     time_sleep.wait_for_node,
@@ -230,50 +236,46 @@ resource "helm_release" "nginx" {
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.nginx_controller.values == null ? [] : var.plugins.nginx_controller.values
   # Ingress Class Configuration
-  set {
-    name  = "controller.ingressClassByName"
-    value = "true"
-  }
-
-  set {
-    name  = "controller.ingressClassResource.name"
-    value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal-nginx" : "external-nginx"
-  }
-
-  set {
-    name  = "controller.ingressClassResource.enabled"
-    value = "true"
-  }
-
-  set {
-    name  = "controller.ingressClassResource.default"
-    value = "false" # Prevents conflicts with ALB controller
-  }
+  set = [
+    {
+      name  = "controller.ingressClassByName"
+      value = "true"
+    },
+    {
+      name  = "controller.ingressClassResource.name"
+      value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal-nginx" : "external-nginx"
+    },
+    {
+      name  = "controller.ingressClassResource.enabled"
+      value = "true"
+    },
+    {
+      name  = "controller.ingressClassResource.default"
+      value = "false" # Prevents conflicts with ALB controller
+    },
 
   # AWS Load Balancer Annotations
-  set {
-    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
-    value = "external"
-  }
-
-  set {
-    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
-    value = var.cluster_settings.addons.vpc_cni ? "ip" : "instance"
-  }
-
-  set {
-    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
-    value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal" : "internet-facing"
-  }
-
-  set {
-    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
-    value = var.plugins.nginx_controller.enable_cross_zone == true ? "true" : "false"
-  }
-  set {
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
+      value = "external"
+    },
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
+      value = var.cluster_settings.addons.vpc_cni ? "ip" : "instance"
+    },
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
+      value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal" : "internet-facing"
+    },
+    {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
+      value = var.plugins.nginx_controller.enable_cross_zone == true ? "true" : "false"
+    },
+    {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-ip-address-type"
     value = var.cluster_settings.ip_family == "ipv6" ? "dualstack" : "ipv4"
-  }
+    }
+  ]
   depends_on = [
     time_sleep.wait_for_node,
     aws_eks_cluster.cluster,
@@ -306,14 +308,17 @@ resource "helm_release" "cert_manager" {
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.cert_manager.values == null ? [] : var.plugins.cert_manager.values
 
-  set {
+  set = [
+      {
     name  = "crds.keep"
     value = "true"
-  }
-  set {
-    name  = "crds.enabled"
-    value = "true"
-  }
+    },
+    {
+      name  = "crds.enabled"
+      value = "true"
+    }
+  ]
+
 
   depends_on = [
     time_sleep.wait_for_node,
@@ -342,10 +347,10 @@ resource "helm_release" "secrets_store_csi_driver" {
   wait       = var.plugins.dont_wait_for_helm_install ? false : true
   values     = var.plugins.secrets_store_csi_driver.values == null ? [] : var.plugins.secrets_store_csi_driver.values
 
-  set {
+  set = [{
     name  = "syncSecret.enabled"
     value = "true"
-  }
+  }]
   depends_on = [
     time_sleep.wait_for_node,
     aws_eks_cluster.cluster,
@@ -396,10 +401,10 @@ resource "helm_release" "external_secrets" {
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   values           = var.plugins.external_secrets.values == null ? [] : var.plugins.external_secrets.values
 
-  set {
+  set = [{
     name  = "installCRDs"
     value = "true"
-  }
+  }]
   depends_on = [time_sleep.wait_for_node, aws_eks_cluster.cluster, aws_eks_node_group.node, aws_eks_addon.kube-proxy, aws_eks_addon.vpc-cni, helm_release.calico_cni, aws_eks_addon.coredns, helm_release.metrics_server]
 }
 
@@ -415,22 +420,27 @@ resource "helm_release" "kubernetes_dashboard" {
   cleanup_on_fail  = true
   values           = var.plugins.kubernetes_dashboard.values == null ? [] : var.plugins.kubernetes_dashboard.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
-  set {
-    name  = "app.ingress.enabled"
-    value = "true"
-  }
-  # Dynamic block for hosts
-  dynamic "set" {
-    for_each = var.plugins.kubernetes_dashboard.hosts
-    content {
-      name  = "app.ingress.hosts[${count.index}]"
-      value = set.value
-    }
-  }
-  set {
-    name  = "app.ingress.ingressClassName"
-    value = var.plugins.kubernetes_dashboard.use_internally ? "internal-nginx" : "external-nginx"
-  }
+  set = flatten ([
+    [
+      {
+        name  = "app.ingress.enabled"
+        value = "true"
+      },
+      {
+        name  = "app.ingress.ingressClassName"
+        value = var.plugins.kubernetes_dashboard.use_internally ? "internal-nginx" : "external-nginx"
+      }
+    ],
+    [
+      # Dynamic block for hosts
+      for id_key, id_value in var.plugins.kubernetes_dashboard.hosts :
+        {
+          name  = "app.ingress.hosts[${id_key}]"
+          value = set.id_value
+        }
+    ]
+  ])    
+
   depends_on = [
     time_sleep.wait_for_node,
     aws_eks_cluster.cluster,
@@ -459,14 +469,17 @@ resource "helm_release" "rancher" {
   disable_webhooks = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
-  set {
-    name  = "hostname"
-    value = var.plugins.rancher.host
-  }
-  set {
-    name  = "ingress.ingressClassName"
-    value = var.plugins.rancher.use_internal_ingress == true ? "internal-nginx" : "external-nginx"
-  }
+  set = [
+    {
+      name  = "hostname"
+      value = var.plugins.rancher.host
+    },
+    {
+      name  = "ingress.ingressClassName"
+      value = var.plugins.rancher.use_internal_ingress == true ? "internal-nginx" : "external-nginx"
+    }
+  ]
+
   depends_on = [
     time_sleep.wait_for_node,
     aws_eks_cluster.cluster,

@@ -33,6 +33,7 @@ resource "aws_efs_mount_target" "eks" {
 
 
 data "aws_iam_policy_document" "policy" {
+  count          = var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   statement {
     sid    = "ExampleStatement01"
     effect = "Allow"

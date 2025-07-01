@@ -128,7 +128,7 @@ resource "aws_eks_pod_identity_association" "aws_ebs_csi_driver" {
 
 ## 3. aws_efs_csi_driver: latest
 data "aws_eks_addon_version" "aws_efs_csi_driver" {
-  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver != null || var.cluster_settings.addons.aws_efs_csi_driver.enable == false ? 0 : 1
   addon_name         = "aws-efs-csi-driver"
   kubernetes_version = aws_eks_cluster.cluster[count.index].version
   most_recent        = true
@@ -148,7 +148,7 @@ resource "aws_eks_addon" "aws_efs_csi_driver" {
   }
 }
 resource "aws_eks_pod_identity_association" "aws_efs_csi_driver" {
-  count           = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver != null || var.cluster_settings.addons.aws_efs_csi_driver.enable == false ? 0 : 1
   cluster_name    = aws_eks_cluster.cluster[count.index].name
   namespace       = "kube-system"
   service_account = "efs-csi-controller-sa"

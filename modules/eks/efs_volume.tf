@@ -1,5 +1,5 @@
 resource "aws_efs_file_system" "eks" {
-  count          = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count          = var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   creation_token = "eks"
   encrypted      = var.cluster_settings.addons.aws_efs_csi_driver.encrypted ? true : false
   lifecycle_policy {
@@ -18,7 +18,7 @@ resource "aws_efs_file_system" "eks" {
 }
 
 resource "aws_efs_mount_target" "eks" {
-  count           = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? length(var.cluster_settings.addons.aws_efs_csi_driver.subnet_ids) : 0
+  count           =var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? length(var.cluster_settings.addons.aws_efs_csi_driver.subnet_ids) : 0
   file_system_id  = aws_efs_file_system.eks[0].id
   subnet_id       = var.cluster_settings.addons.aws_efs_csi_driver.subnet_ids[count.index]
   security_groups = aws_eks_cluster.cluster[0].vpc_config[0].security_group_ids != [] ? aws_eks_cluster.cluster[0].vpc_config[0].security_group_ids : [aws_eks_cluster.cluster[0].vpc_config[0].cluster_security_group_id]
@@ -63,7 +63,7 @@ data "aws_iam_policy_document" "policy" {
 }
 
 resource "aws_efs_file_system_policy" "policy" {
-  count          = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count          = var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   file_system_id = aws_efs_file_system.eks[count.index].id
   policy         = data.aws_iam_policy_document.policy.json
   depends_on = [
@@ -78,7 +78,7 @@ resource "aws_efs_file_system_policy" "policy" {
 # Doc: https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-efs
 # Doc: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/storage_class_v1
 resource "kubernetes_storage_class_v1" "efs" {
-  count = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count = var.cluster_settings == null || var.node_settings == null || var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable && var.cluster_settings.addons.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   metadata {
     name = "efs"
   }

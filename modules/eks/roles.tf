@@ -128,7 +128,7 @@ resource "aws_iam_role_policy_attachment" "cluster-autoscaler" {
 ## 2. aws_ebs_csi_driver
 ### Role
 resource "aws_iam_role" "aws_ebs_csi_driver" {
-  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_ebs_csi_driver != null ? 1 : 0
+  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
   name  = "${var.metadata.name}-aws-ebs-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -145,7 +145,7 @@ resource "aws_iam_role" "aws_ebs_csi_driver" {
 }
 ### Role Policy Attachment
 resource "aws_iam_role_policy_attachment" "aws_ebs_csi_driver" {
-  count      = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_ebs_csi_driver != null ? 1 : 0
+  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
   role       = aws_iam_role.aws_ebs_csi_driver[count.index].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
 }
@@ -170,7 +170,7 @@ resource "aws_iam_role" "aws_efs_csi_driver" {
 }
 ### Role Policy Attachment
 resource "aws_iam_role_policy_attachment" "aws_efs_csi_driver" {
-  count      = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
+  count = var.cluster_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver.enable ? 1 : 0
   role       = aws_iam_role.aws_efs_csi_driver[count.index].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
 }

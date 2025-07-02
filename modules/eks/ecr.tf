@@ -1,6 +1,6 @@
 resource "aws_ecr_repository" "ecr" {
   count                = var.plugins == null ? 0 : var.plugins.create_ecr_registry == null ? 0 : var.plugins.create_ecr_registry ? 1 : 0
-  name                 = "${var.metadata.name}-${var.metadata.environment}"
+  name                 = lower("${var.metadata.name}-${var.metadata.environment}")
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {

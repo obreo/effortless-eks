@@ -2,7 +2,7 @@
 resource "aws_s3_bucket" "bucket" {
   count = var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable && var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0
 
-  bucket        = "${var.metadata.name}-eks-driver"
+  bucket        = lower("${var.metadata.name}-eks-driver")
   force_destroy = true
 }
 

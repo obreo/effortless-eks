@@ -49,7 +49,7 @@ resource "aws_eks_addon" "coredns" {
     aws_eks_cluster.cluster
   ]
   lifecycle {
-    ignore_changes = [addon_version]
+    ignore_changes = all
   }
 }
 

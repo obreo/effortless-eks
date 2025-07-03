@@ -240,3 +240,20 @@ resource "aws_vpc_security_group_egress_rule" "cluster_ipv6" {
   cidr_ipv6         = "::/0"
   ip_protocol       = "-1" # semantically equivalent to all ports
 }
+
+
+# INTERFACE VPC ENDPOINT
+resource "aws_vpc_endpoint" "interface" {
+  for_each = var.interface_endpoints
+
+  vpc_id            = aws_vpc.vpc.id
+  service_name      = each.value.service
+  vpc_endpoint_type = "Interface"
+  subnet_ids        = each.value.subnet_ids != null ? each.value.subnet_ids : aws_subnet.private[*].id
+  private_dns_enabled = lookup(each.value, "private_dns", true)
+  security_group_ids  = each.value.security_groups
+
+  tags = {
+    Name = "endpoint-${replace(each.value.service, ".", "-")}"
+  }
+}

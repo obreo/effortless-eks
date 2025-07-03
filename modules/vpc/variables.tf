@@ -53,4 +53,13 @@ variable "security_groups" {
   }))
 }
 
-
+variable "interface_endpoints" {
+  description = "Map of interface endpoint services to enable"
+  type = map(object({
+    service         = string        # e.g., com.amazonaws.us-east-1.ssm
+    private_dns     = optional(bool, true)
+    security_groups = optional(list(string), [])  # Allow passing SGs
+    subnet_ids      = optional(list(string))      # Optional override
+  }))
+  default = {}
+}

@@ -252,7 +252,19 @@ resource "aws_vpc_endpoint" "interface" {
   subnet_ids        = each.value.subnet_ids != null ? each.value.subnet_ids : aws_subnet.private[*].id
   private_dns_enabled = lookup(each.value, "private_dns", true)
   security_group_ids  = each.value.security_groups
-
+  auto_accept = true
+  ip_address_type = each.value.connection_ip_type
+  dns_options {
+    dns_record_ip_type = each.value.dns_record_ip_type != null ? each.value.dns_record_ip_type : lookup(
+      {
+        ipv4      = "ipv4"
+        ipv6      = "ipv6"
+        dualstack = "dualstack"
+      },
+      each.value.connection_ip_type,
+      "ipv4"
+    )
+  }
   tags = {
     Name = "endpoint-${replace(each.value.service, ".", "-")}"
   }

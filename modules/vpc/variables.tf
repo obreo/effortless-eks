@@ -60,6 +60,8 @@ variable "interface_endpoints" {
     private_dns     = optional(bool, true)
     security_groups = optional(list(string), [])  # Allow passing SGs
     subnet_ids      = optional(list(string))      # Optional override
+    connection_ip_type = optional(string, "ipv4")
+    dns_record_ip_type = optional(string)
   }))
   default = {}
 }

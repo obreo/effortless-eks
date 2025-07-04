@@ -164,9 +164,9 @@ resource "aws_route_table" "private" {
     Name = "${var.name}-private"
   }
 
-  lifecycle {
-    ignore_changes = [route]
-  }
+  #lifecycle {
+    #ignore_changes = [route]
+  #}
 }
 
 resource "aws_route_table_association" "private" {

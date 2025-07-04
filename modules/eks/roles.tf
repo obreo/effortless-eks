@@ -61,8 +61,41 @@ resource "aws_iam_role_policy_attachment" "AmazonSSMManagedInstanceCore" {
   role       = aws_iam_role.node.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
 }
+resource "aws_iam_role_policy_attachment" "AmazonEKSCNIIPv6Policy" {
+  role       = aws_iam_role.node.name
+  policy_arn = aws_iam_policy.AmazonEKSCNIIPv6Policy.arn
+}
+resource "aws_iam_policy" "AmazonEKSCNIIPv6Policy" {
+  name        = "AmazonEKS_CNI_IPv6_Policy"
+  path        = "/"
+  description = "IPv6 policies to attach to worker-node"
 
-
+  # Terraform's "jsonencode" function converts a
+  # Terraform expression result to valid JSON syntax.
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = [
+          "ec2:AssignIpv6Addresses",
+          "ec2:DescribeInstances",
+          "ec2:DescribeTags",
+          "ec2:DescribeNetworkInterfaces",
+          "ec2:DescribeInstanceTypes"
+        ]
+        Effect   = "Allow"
+        Resource = "*"
+      },
+      {
+        Action = [
+          "ec2:CreateTags"
+        ]
+        Effect   = "Allow"
+        Resource = "arn:aws:ec2:*:*:network-interface/*"
+      },
+    ]
+  })
+}
 
 #######################################################
 # ServiceAccount IAM Roles

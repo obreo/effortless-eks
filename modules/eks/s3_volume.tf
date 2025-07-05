@@ -47,6 +47,7 @@ resource "kubernetes_storage_class_v1" "s3" {
   mount_options = ["iam"]
 
   depends_on = [
+    data.aws_eks_cluster.cluster,
     aws_eks_addon.eks_pod_identity_agent,
     aws_eks_cluster.cluster,
     aws_eks_node_group.node,

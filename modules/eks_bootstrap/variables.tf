@@ -26,6 +26,10 @@ variable "integrations" {
           bucket_region = optional(string, "") 
           }))
       }))
+
+      ecr_registry = optional(object({
+        name = optional(string, "")
+      }))
   })
 
   default = null

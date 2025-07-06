@@ -316,7 +316,7 @@ resource "helm_release" "external_secrets" {
 
 # K8s Dashboard
 resource "helm_release" "kubernetes_dashboard" {
-  count            = var.node_settings == null || var.plugins == null ? 0 : var.plugins.kubernetes_dashboard == null ? 0 : var.plugins.kubernetes_dashboard != null ? 1 : 0
+  count            = var.plugins == null ? 0 : var.plugins.kubernetes_dashboard == null ? 0 : var.plugins.kubernetes_dashboard != null ? 1 : 0
   name             = "k8s-dashboard"
   repository       = "https://kubernetes.github.io/dashboard"
   chart            = "kubernetes-dashboard"

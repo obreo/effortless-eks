@@ -12,7 +12,7 @@ variable "integrations" {
         encrypted       = optional(bool, true)
         subnet_ids      = optional(list(string))
         efs_resource_id = optional(string, "")
-        security_groups = optional(list, [])
+        security_groups = optional(list(string), [])
       }))
 
       aws_mountpoint_s3_csi_driver = optional(object({

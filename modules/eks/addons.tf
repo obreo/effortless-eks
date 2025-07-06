@@ -1,3 +1,4 @@
+# Authenticating External services with ServiceAccount
 # Cluster Autoscaler EKS Pod Identity Association
 # EKS Pod Identity Association: to attach IAM role with Service account
 resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
@@ -9,7 +10,23 @@ resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
   depends_on      = [aws_eks_addon.eks_pod_identity_agent]
 }
 
-# EKS PLUGINS
+## Application Load Balancer Controller service account auth
+resource "aws_eks_pod_identity_association" "alb" {
+  count           = var.node_settings == null || var.plugins == null ? 0 : var.plugins.aws_alb_controller != null ? 1 : 0
+  cluster_name    = var.metadata.name
+  namespace       = "kube-system"
+  service_account = "aws-load-balancer-controller"
+  role_arn        = aws_iam_role.alb[count.index].arn
+
+  depends_on = [
+    aws_eks_addon.eks_pod_identity_agent,
+    aws_iam_role_policy_attachment.alb,
+    aws_eks_node_group.node,
+    aws_eks_cluster.cluster
+  ]
+}
+
+# EKS native ADDONS
 # Doc: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/eks_addon_version
 # Doc: https://docs.aws.amazon.com/eks/latest/userguide/eks-add-ons.html
 # VPC CNI
@@ -275,18 +292,4 @@ resource "aws_eks_pod_identity_association" "cloudwatch" {
   ]
 }
 
-## 8. Application Load Balancer Controller
-resource "aws_eks_pod_identity_association" "alb" {
-  count           = var.node_settings == null || var.plugins == null ? 0 : var.plugins.aws_alb_controller != null ? 1 : 0
-  cluster_name    = var.metadata.name
-  namespace       = "kube-system"
-  service_account = "aws-load-balancer-controller"
-  role_arn        = aws_iam_role.alb[count.index].arn
 
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_iam_role_policy_attachment.alb,
-    aws_eks_node_group.node,
-    aws_eks_cluster.cluster
-  ]
-}

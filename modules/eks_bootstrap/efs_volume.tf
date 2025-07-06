@@ -1,6 +1,6 @@
 # Deploying EFS and setting its storageClass in cluster
 resource "aws_efs_file_system" "eks" {
-  count          = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable && var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count          = var.integrations.aws_efs_csi_driver != null ? var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0 : 0
   creation_token = "eks"
   encrypted      = var.integrations.aws_efs_csi_driver.encrypted ? true : false
   lifecycle_policy {
@@ -12,7 +12,7 @@ resource "aws_efs_file_system" "eks" {
 }
 
 resource "aws_efs_mount_target" "eks" {
-  count           = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable && var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? length(var.integrations.aws_efs_csi_driver.subnet_ids) : 0
+  count           = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? length(var.integrations.aws_efs_csi_driver.subnet_ids) : 0
   file_system_id  = aws_efs_file_system.eks[0].id
   subnet_id       = var.integrations.aws_efs_csi_driver.subnet_ids[count.index]
   security_groups = var.integrations.aws_efs_csi_driver.security_groups
@@ -20,7 +20,7 @@ resource "aws_efs_mount_target" "eks" {
 
 
 data "aws_iam_policy_document" "policy" {
-  count          = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable && var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count          = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   statement {
     sid    = "ExampleStatement01"
     effect = "Allow"
@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "policy" {
 }
 
 resource "aws_efs_file_system_policy" "policy" {
-  count          = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable && var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count          = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   file_system_id = aws_efs_file_system.eks[count.index].id
   policy         = data.aws_iam_policy_document.policy[count.index].json
 }
@@ -60,7 +60,7 @@ resource "aws_efs_file_system_policy" "policy" {
 # Doc: https://kubernetes.io/docs/concepts/storage/storage-classes/#aws-efs
 # Doc: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/storage_class_v1
 resource "kubernetes_storage_class_v1" "efs" {
-  count = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable && var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
+  count = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.efs_resource_id == "" ? 1 : 0
   metadata {
     name = "efs"
   }

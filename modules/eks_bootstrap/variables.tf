@@ -8,7 +8,6 @@ variable "integrations" {
       }))
 
       aws_efs_csi_driver = optional(object({
-        enable          = optional(bool, false)
         name            = optional(string, "")
         encrypted       = optional(bool, true)
         subnet_ids      = optional(list(string))
@@ -17,14 +16,13 @@ variable "integrations" {
       }))
 
       aws_mountpoint_s3_csi_driver = optional(object({
-        enable        = optional(bool, false)
         name            = optional(string, "")
         s3_bucket_arn = optional(string, "") # Default to empty string, if not set, it will create a new bucket
         create_vpc_endpoint = optional(object({
           vpc_id = optional(string, "")
           route_table_ids=optional(list(string), []) # Default to all route tables in vpc
           bucket_region = optional(string, "") 
-          }))
+        }))
       }))
 
       ecr_registry = optional(object({

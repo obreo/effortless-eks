@@ -49,6 +49,7 @@ variable "plugins" {
     }))
 
     nginx_controller = optional(object({
+      alb_family_type         = optional(string, "IPv6")
       scheme_type       = optional(string, "internet-facing") # OR "internal"
       enable_cross_zone = optional(bool, false)
       values            = optional(list(string), [])

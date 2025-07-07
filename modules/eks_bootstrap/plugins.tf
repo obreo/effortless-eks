@@ -197,7 +197,7 @@ resource "helm_release" "nginx" {
     },
     {
       name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
-      value = var.cluster_settings.addons.vpc_cni ? "ip" : "instance"
+      value = "ip"
     },
     {
       name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
@@ -209,7 +209,7 @@ resource "helm_release" "nginx" {
     },
     {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-ip-address-type"
-    value = var.cluster_settings.ip_family == "ipv6" ? "ipv6" : "ipv4"
+    value = var.plugins.alb_family_type == "ipv6" ? "ipv6" : "ipv4"
     }
   ]
   depends_on = [

@@ -12,7 +12,7 @@ resource "aws_eks_pod_identity_association" "cluster-autoscaler" {
 
 ## Application Load Balancer Controller service account auth
 resource "aws_eks_pod_identity_association" "alb" {
-  count           = var.node_settings == null
+  count           = var.node_settings == null ? 0 : 1
   cluster_name    = var.metadata.name
   namespace       = "kube-system"
   service_account = "aws-load-balancer-controller"

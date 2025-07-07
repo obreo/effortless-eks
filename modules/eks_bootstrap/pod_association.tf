@@ -25,7 +25,7 @@ resource "aws_eks_pod_identity_association" "aws_ebs_csi_driver" {
   cluster_name    = data.aws_eks_cluster.eks.name
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
-  role_arn        = aws_iam_role.aws_ebs_csi_driver[0].arn
+  role_arn        = aws_iam_role.aws_ebs_csi_driver[count.index].arn
 }
 
 ## 3. aws_efs_csi_driver: latest
@@ -50,7 +50,7 @@ resource "aws_eks_pod_identity_association" "aws_efs_csi_driver" {
   cluster_name    = data.aws_eks_cluster.eks.name
   namespace       = "kube-system"
   service_account = "efs-csi-controller-sa"
-  role_arn        = aws_iam_role.aws_efs_csi_driver[0].arn
+  role_arn        = aws_iam_role.aws_efs_csi_driver[count.index].arn
 
 }
 
@@ -76,6 +76,6 @@ resource "aws_eks_pod_identity_association" "s3" {
   cluster_name    = data.aws_eks_cluster.eks.name
   namespace       = "kube-system"
   service_account = "s3-csi-driver-sa"
-  role_arn        = aws_iam_role.aws_mountpoint_s3_csi_driver[0].arn
+  role_arn        = aws_iam_role.aws_mountpoint_s3_csi_driver[count.index].arn
 
 }

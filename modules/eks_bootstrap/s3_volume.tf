@@ -7,6 +7,8 @@ resource "aws_s3_bucket" "bucket" {
 }
 
 # Bucket policy
+## Get current IAM user
+data "aws_caller_identity" "current" {}
 resource "aws_s3_bucket_policy" "allow_access" {
   count  = var.integrations.aws_mountpoint_s3_csi_driver != null ? var.integrations.aws_mountpoint_s3_csi_driver.s3_bucket_arn == "" ? 1 : 0 : 0
   bucket = aws_s3_bucket.bucket[count.index].id
@@ -60,6 +62,6 @@ data "aws_route_tables" "rts" {
 resource "aws_vpc_endpoint" "s3" {
   count = var.integrations.aws_mountpoint_s3_csi_driver != null ? var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint != null ? 1 : 0 : 0
   vpc_id       = var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.vpc_id
-  service_name = var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region != "" ? "com.amazonaws.${ var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region}.s3" : "com.amazonaws.${var.metadata.region}.s3"
+  service_name = var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region != "" ? "com.amazonaws.${ var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.bucket_region}.s3" : "com.amazonaws.${data.aws_route_tables.rts.ids}.s3"
   route_table_ids = var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids != [] ? var.integrations.aws_mountpoint_s3_csi_driver.create_vpc_endpoint.route_table_ids : data.aws_route_tables.rts.ids
 }

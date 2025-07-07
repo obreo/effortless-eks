@@ -39,6 +39,7 @@ variable "plugins" {
 
     dont_wait_for_helm_install = optional(bool, true)
     cluster_autoscaler = optional(object({
+      cluster_name = optional(string)
       region = optional(string, "")
       values = optional(list(string), [])
     }))

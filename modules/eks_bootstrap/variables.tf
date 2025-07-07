@@ -1,5 +1,6 @@
 variable "integrations" {
   type = object({
+      cluster_name = optional(string, "")
       aws_ebs_csi_driver = optional(object({
         fstype    = optional(string, "ext4")
         ebs_type  = optional(string, "gp3")

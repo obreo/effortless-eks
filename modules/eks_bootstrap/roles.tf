@@ -68,7 +68,7 @@ resource "aws_iam_role" "aws_mountpoint_s3_csi_driver" {
 }
 ### Policy
 resource "aws_iam_policy" "aws_mountpoint_s3_csi_driver" {
-  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : 1
   name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-mountpoint-s3-csi-driver"
   policy = jsonencode(
     {
@@ -103,7 +103,7 @@ resource "aws_iam_policy" "aws_mountpoint_s3_csi_driver" {
 }
 ### Role Policy Attachment
 resource "aws_iam_role_policy_attachment" "aws_mountpoint_s3_csi_driver" {
-  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : 1
   role       = aws_iam_role.aws_mountpoint_s3_csi_driver[count.index].name
   policy_arn = aws_iam_policy.aws_mountpoint_s3_csi_driver[count.index].arn
 }

@@ -368,6 +368,7 @@ resource "helm_release" "rancher" {
   wait_for_jobs    = true
   timeout          = 600
   disable_webhooks = true
+  upgrade_install  = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   set = concat(

@@ -364,9 +364,9 @@ resource "helm_release" "rancher" {
   chart            = "rancher"
   namespace        = "cattle-system"
   create_namespace = true
-  force_update     = true
+  #force_update     = true
   cleanup_on_fail  = true
-  disable_webhooks = true
+  #disable_webhooks = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   set = concat(

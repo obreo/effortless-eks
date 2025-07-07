@@ -26,10 +26,10 @@ data "aws_iam_policy_document" "allow_access" {
       "s3:DeleteObject"
     ]
 
-    resources = [
+    resources = length(aws_s3_bucket.bucket) > 0 ? [
       aws_s3_bucket.bucket[0].arn,
       "${aws_s3_bucket.bucket[0].arn}/*"
-    ]
+    ] : []
   }
 }
 

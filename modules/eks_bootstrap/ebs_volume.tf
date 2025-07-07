@@ -4,11 +4,11 @@
 locals {
   ebs_parameters = merge(
     {
-      "csi.storage.k8s.io/fstype" = var.integrations.aws_ebs_csi_driver.fstype
-      "type"                      = var.integrations.aws_ebs_csi_driver.ebs_type
-      "encrypted"                 = var.integrations.aws_ebs_csi_driver.encrypted ? "true" : "false"
+      "csi.storage.k8s.io/fstype" = var.integrations.aws_ebs_csi_driver != null ? var.integrations.aws_ebs_csi_driver.fstype : ""
+      "type"                      = var.integrations.aws_ebs_csi_driver != null ? var.integrations.aws_ebs_csi_driver.ebs_type : ""
+      "encrypted"                 = var.integrations.aws_ebs_csi_driver != null ? var.integrations.aws_ebs_csi_driver.encrypted ? "true" : "false" : ""
     },
-    var.integrations.aws_ebs_csi_driver.iopsPerGB != null ?
+    var.cluster_settings.addons.aws_ebs_csi_driver == null ? {} : var.integrations.aws_ebs_csi_driver.iopsPerGB != null ?
     { "iopsPerGB" = tostring(var.integrations.aws_ebs_csi_driver.iopsPerGB) } : {}
   )
 }

@@ -311,7 +311,7 @@ resource "helm_release" "external_secrets" {
     name  = "installCRDs"
     value = "true"
   }]
-  depends_on = [time_sleep.wait_for_node, helm_release.metrics_server]
+  depends_on = [time_sleep.wait_for_node, helm_release.metrics_server , helm_release.rancher]
 }
 
 # K8s Dashboard
@@ -364,9 +364,10 @@ resource "helm_release" "rancher" {
   chart            = "rancher"
   namespace        = "cattle-system"
   create_namespace = true
-  #force_update     = true
   cleanup_on_fail  = true
-  #disable_webhooks = true
+  wait_for_jobs    = true
+  timeout          = 600
+  disable_webhooks = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
   set = concat(

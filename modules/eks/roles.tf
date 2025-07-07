@@ -191,7 +191,7 @@ resource "aws_iam_role_policy_attachment" "amazon_cloudwatch_observability_2" {
 # 5. Appliaction Load Balancer Controller
 ## Role & Assume Role Policy
 resource "aws_iam_role" "alb" {
-  count = var.node_settings == null
+  count = var.node_settings == null ? 0 : 1
   name  = "${var.metadata.name}-alb-controller"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -209,14 +209,14 @@ resource "aws_iam_role" "alb" {
 
 ## Policy
 resource "aws_iam_policy" "alb" {
-  count  = var.node_settings == null
+  count  = var.node_settings == null ? 0 : 1
   policy = file("${path.module}/iam-policies/alb.json")
   name   = "AWSLoadBalancerController-${var.metadata.name}"
 }
 
 ## Role Policy Attachement
 resource "aws_iam_role_policy_attachment" "alb" {
-  count      = var.node_settings == null 
+  count      = var.node_settings == null ? 0 : 1
   role       = aws_iam_role.alb[count.index].name
   policy_arn = aws_iam_policy.alb[count.index].arn
 }

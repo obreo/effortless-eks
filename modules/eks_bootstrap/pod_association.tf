@@ -14,11 +14,7 @@ resource "aws_eks_addon" "aws_ebs_csi_driver" {
   cluster_name  = data.aws_eks_cluster.eks.name
   addon_name    = "aws-ebs-csi-driver"
   addon_version = data.aws_eks_addon_version.aws_ebs_csi_driver[count.index].version
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
+
   lifecycle {
     ignore_changes = [addon_version]
   }
@@ -30,11 +26,6 @@ resource "aws_eks_pod_identity_association" "aws_ebs_csi_driver" {
   namespace       = "kube-system"
   service_account = "ebs-csi-controller-sa"
   role_arn        = aws_iam_role.aws_ebs_csi_driver[count.index].arn
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
 }
 
 ## 3. aws_efs_csi_driver: latest
@@ -49,11 +40,7 @@ resource "aws_eks_addon" "aws_efs_csi_driver" {
   cluster_name  = data.aws_eks_cluster.eks.name
   addon_name    = "aws-efs-csi-driver"
   addon_version = data.aws_eks_addon_version.aws_efs_csi_driver[count.index].version
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
+
   lifecycle {
     ignore_changes = [addon_version]
   }
@@ -64,11 +51,6 @@ resource "aws_eks_pod_identity_association" "aws_efs_csi_driver" {
   namespace       = "kube-system"
   service_account = "efs-csi-controller-sa"
   role_arn        = aws_iam_role.aws_efs_csi_driver[count.index].arn
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
 
 }
 
@@ -84,11 +66,7 @@ resource "aws_eks_addon" "aws-mountpoint-s3-csi-driver" {
   cluster_name  = data.aws_eks_cluster.eks.name
   addon_name    = "aws-mountpoint-s3-csi-driver"
   addon_version = data.aws_eks_addon_version.aws-mountpoint-s3-csi-driver[count.index].version
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
+
   lifecycle {
     ignore_changes = [addon_version]
   }
@@ -99,10 +77,5 @@ resource "aws_eks_pod_identity_association" "s3" {
   namespace       = "kube-system"
   service_account = "s3-csi-driver-sa"
   role_arn        = aws_iam_role.aws_mountpoint_s3_csi_driver[count.index].arn
-  depends_on = [
-    aws_eks_addon.eks_pod_identity_agent,
-    aws_eks_cluster.cluster,
-    aws_eks_node_group.node
-  ]
 
 }

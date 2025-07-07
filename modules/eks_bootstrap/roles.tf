@@ -43,7 +43,7 @@ resource "aws_iam_role" "aws_efs_csi_driver" {
 }
 ### Role Policy Attachment
 resource "aws_iam_role_policy_attachment" "aws_efs_csi_driver" {
-  #count = var.cluster_settings == null ? 0 : var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable ? 1 : 0
+  count = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable ? 1 : 0
   role       = aws_iam_role.aws_efs_csi_driver[count.index].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonEFSCSIDriverPolicy"
 }
@@ -51,7 +51,7 @@ resource "aws_iam_role_policy_attachment" "aws_efs_csi_driver" {
 ## 3. aws_mountpoint_s3_csi_driver
 ### Role
 resource "aws_iam_role" "aws_mountpoint_s3_csi_driver" {
-  #count = var.cluster_settings == null || var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-mountpoint-s3-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -68,7 +68,7 @@ resource "aws_iam_role" "aws_mountpoint_s3_csi_driver" {
 }
 ### Policy
 resource "aws_iam_policy" "aws_mountpoint_s3_csi_driver" {
-  #count = var.cluster_settings == null || var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count = var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-mountpoint-s3-csi-driver"
   policy = jsonencode(
     {

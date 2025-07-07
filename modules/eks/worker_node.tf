@@ -31,7 +31,7 @@ resource "aws_eks_node_group" "node" {
   }
 
   dynamic "remote_access" {
-    for_each = var.node_settings == null ? [] : var.node_settings.remote_access.enable ? [1] : []
+    for_each = var.node_settings == null || var.node_settings.remote_access == null ? [] : var.node_settings.remote_access.enable ? [1] : []
     content {
       ec2_ssh_key               = try(var.node_settings.remote_access.ssh_key_name)
       source_security_group_ids = try(var.node_settings.remote_access.allowed_security_groups, null)

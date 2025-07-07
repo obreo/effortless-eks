@@ -165,7 +165,7 @@ resource "aws_eks_addon" "aws_efs_csi_driver" {
   }
 }
 resource "aws_eks_pod_identity_association" "aws_efs_csi_driver" {
-  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null || var.cluster_settings.addons.aws_efs_csi_driver.enable == false ? 0 : 1
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_efs_csi_driver == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   cluster_name    = aws_eks_cluster.cluster[count.index].name
   namespace       = "kube-system"
   service_account = "efs-csi-controller-sa"
@@ -180,13 +180,13 @@ resource "aws_eks_pod_identity_association" "aws_efs_csi_driver" {
 
 ## 4. aws-mountpoint-s3-csi-driver: latest
 data "aws_eks_addon_version" "aws-mountpoint-s3-csi-driver" {
-  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   addon_name         = "aws-mountpoint-s3-csi-driver"
   kubernetes_version = aws_eks_cluster.cluster[count.index].version
   most_recent        = true
 }
 resource "aws_eks_addon" "aws-mountpoint-s3-csi-driver" {
-  count         = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   cluster_name  = aws_eks_cluster.cluster[count.index].name
   addon_name    = "aws-mountpoint-s3-csi-driver"
   addon_version = data.aws_eks_addon_version.aws-mountpoint-s3-csi-driver[count.index].version
@@ -200,7 +200,7 @@ resource "aws_eks_addon" "aws-mountpoint-s3-csi-driver" {
   }
 }
 resource "aws_eks_pod_identity_association" "s3" {
-  count           = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
+  count              = var.cluster_settings == null || var.node_settings == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver == null ? 0 : var.cluster_settings.addons.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
   cluster_name    = aws_eks_cluster.cluster[count.index].name
   namespace       = "kube-system"
   service_account = "s3-csi-driver-sa"

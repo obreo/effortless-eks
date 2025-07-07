@@ -8,7 +8,7 @@ locals {
       "type"                      = var.integrations.aws_ebs_csi_driver != null ? var.integrations.aws_ebs_csi_driver.ebs_type : ""
       "encrypted"                 = var.integrations.aws_ebs_csi_driver != null ? var.integrations.aws_ebs_csi_driver.encrypted ? "true" : "false" : ""
     },
-    var.cluster_settings.addons.aws_ebs_csi_driver == null ? {} : var.integrations.aws_ebs_csi_driver.iopsPerGB != null ?
+    var.integrations.aws_ebs_csi_driver == null ? {} : var.integrations.aws_ebs_csi_driver.iopsPerGB != null ?
     { "iopsPerGB" = tostring(var.integrations.aws_ebs_csi_driver.iopsPerGB) } : {}
   )
 }

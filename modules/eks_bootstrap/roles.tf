@@ -2,7 +2,7 @@
 ### Role
 resource "aws_iam_role" "aws_ebs_csi_driver" {
   #count = var.cluster_settings == null ? 0 : var.integrations.aws_ebs_csi_driver == null ? 0 : 1
-  name  = "${var.metadata.name}-aws-ebs-csi-driver"
+  name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-ebs-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -27,7 +27,7 @@ resource "aws_iam_role_policy_attachment" "aws_ebs_csi_driver" {
 ### Role
 resource "aws_iam_role" "aws_efs_csi_driver" {
   count = var.integrations.aws_efs_csi_driver == null ? 0 : var.integrations.aws_efs_csi_driver.enable ? 1 : 0
-  name  = "${var.metadata.name}-aws-efs-csi-driver"
+  name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-efs-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -52,7 +52,7 @@ resource "aws_iam_role_policy_attachment" "aws_efs_csi_driver" {
 ### Role
 resource "aws_iam_role" "aws_mountpoint_s3_csi_driver" {
   #count = var.cluster_settings == null || var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
-  name  = "${var.metadata.name}-aws-mountpoint-s3-csi-driver"
+  name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-mountpoint-s3-csi-driver"
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -69,7 +69,7 @@ resource "aws_iam_role" "aws_mountpoint_s3_csi_driver" {
 ### Policy
 resource "aws_iam_policy" "aws_mountpoint_s3_csi_driver" {
   #count = var.cluster_settings == null || var.integrations.aws_mountpoint_s3_csi_driver == null ? 0 : var.integrations.aws_mountpoint_s3_csi_driver.enable ? 1 : 0
-  name  = "${var.metadata.name}-aws-mountpoint-s3-csi-driver"
+  name  = "${lower(replace(data.aws_eks_cluster.eks.name, "_", "-"))}-aws-mountpoint-s3-csi-driver"
   policy = jsonencode(
     {
       "Version" : "2012-10-17",

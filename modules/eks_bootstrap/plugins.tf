@@ -369,17 +369,21 @@ resource "helm_release" "rancher" {
   disable_webhooks = true
   values           = var.plugins.rancher.values == null ? [] : var.plugins.rancher.values
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
-  set = compact([
-    var.plugins.rancher.host != null && var.plugins.rancher.host != "" ? {
-      name  = "hostname"
-      value = var.plugins.rancher.host
-    } : null,
+  set = concat(
+    var.plugins.rancher.host != null && var.plugins.rancher.host != "" ? [
+      {
+        name  = "hostname"
+        value = var.plugins.rancher.host
+      }
+    ] : [],
+    [
+      {
+        name  = "ingress.ingressClassName"
+        value = var.plugins.rancher.use_internal_ingress == true ? "internal-nginx" : "external-nginx"
+      }
+    ]
+  )
 
-    {
-      name  = "ingress.ingressClassName"
-      value = var.plugins.rancher.use_internal_ingress == true ? "internal-nginx" : "external-nginx"
-    }
-  ])
 
   depends_on = [
     time_sleep.wait_for_node,

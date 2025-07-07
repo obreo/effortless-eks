@@ -44,5 +44,5 @@ data "aws_eks_cluster_auth" "cluster" {
 
 # ecr_registry
 output "ecr_registry" {
-  value = aws_ecr_repository.ecr[*].repository_url
+  value = var.plugins.create_ecr_registry ? aws_ecr_repository.ecr[*].repository_url : null
 }

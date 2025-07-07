@@ -209,7 +209,7 @@ resource "helm_release" "nginx" {
     },
     {
     name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-ip-address-type"
-    value = var.plugins.alb_family_type == "ipv6" ? "ipv6" : "ipv4"
+    value = var.plugins.nginx_controller.alb_family_type == "ipv6" ? "ipv6" : "ipv4"
     }
   ]
   depends_on = [

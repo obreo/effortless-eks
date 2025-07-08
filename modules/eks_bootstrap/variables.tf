@@ -49,12 +49,15 @@ variable "plugins" {
       values = optional(list(string), [])
     }))
 
-    nginx_controller = optional(object({
-      alb_family_type         = optional(string, "IPv6")
+    nginx_controller = optional(map(object({
       scheme_type       = optional(string, "internet-facing") # OR "internal"
-      enable_cross_zone = optional(bool, false)
+      alb_config = optional(object({
+        alb_ingress_traffic_mode = optional(string, "ip")
+        alb_family_type         = optional(string, "IPv6")
+        enable_cross_zone = optional(bool, false)
+      }))
       values            = optional(list(string), [])
-    }))
+    })))
 
     aws_alb_controller = optional(object({
       eks_cluster_name = optional(string, "")

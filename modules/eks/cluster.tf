@@ -2,7 +2,7 @@
 # Doc: https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/eks_cluster
 resource "aws_eks_cluster" "cluster" {
   count    = var.cluster_settings != null ? 1 : 0
-  name     = try(var.metadata.name, "${var.metadata.name}-default-cluster")
+  name     = var.metadata.name
   role_arn = aws_iam_role.cluster.arn
   version  = var.metadata.eks_version != "" ? var.metadata.eks_version : null
 

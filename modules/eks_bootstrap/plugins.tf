@@ -160,8 +160,8 @@ resource "helm_release" "aws_alb_controller" {
 # Doc: https://kubernetes-sigs.github.io/aws-load-balancer-controller/v2.2/guide/service/annotations/
 # Doc: https://kubernetes.github.io/ingress-nginx/deploy/
 resource "helm_release" "nginx" {
-  count            =  var.plugins == null ? 0 : var.plugins.nginx_controller != null || var.plugins.rancher != null ? 1 : 0
-  name             = "ingress-nginx"
+  for_each = var.plugins.nginx_controller
+  name             = "${each.key}"
   repository       = "https://kubernetes.github.io/ingress-nginx"
   chart            = "ingress-nginx"
   namespace        = "ingress"
@@ -170,48 +170,51 @@ resource "helm_release" "nginx" {
   cleanup_on_fail  = true
   timeout          = 1200
   wait             = var.plugins.dont_wait_for_helm_install ? false : true
-  values           = var.plugins.nginx_controller.values == null ? [] : var.plugins.nginx_controller.values
+  values           = lookup(each.value, "values", [])
   # Ingress Class Configuration
-  set = [
-    {
-      name  = "controller.ingressClassByName"
-      value = "true"
-    },
-    {
-      name  = "controller.ingressClassResource.name"
-      value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal-nginx" : "external-nginx"
-    },
-    {
-      name  = "controller.ingressClassResource.enabled"
-      value = "true"
-    },
-    {
-      name  = "controller.ingressClassResource.default"
-      value = "false" # Prevents conflicts with ALB controller
-    },
-
-  # AWS Load Balancer Annotations
-    {
-      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
-      value = "external"
-    },
-    {
-      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
-      value = "ip"
-    },
-    {
-      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
-      value = var.plugins.nginx_controller.scheme_type != "internet-facing" ? "internal" : "internet-facing"
-    },
-    {
-      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
-      value = var.plugins.nginx_controller.enable_cross_zone == true ? "true" : "false"
-    },
-    {
-    name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-ip-address-type"
-    value = var.plugins.nginx_controller.alb_family_type == "ipv6" ? "ipv6" : "ipv4"
-    }
-  ]
+  set = concat(
+    [
+      {
+        name  = "controller.ingressClassByName"
+        value = "true"
+      },
+      {
+        name  = "controller.ingressClassResource.name"
+        value = "${each.key}"
+      },
+      {
+        name  = "controller.ingressClassResource.enabled"
+        value = "true"
+      },
+      {
+        name  = "controller.ingressClassResource.default"
+        value = "false" # Prevents conflicts with ALB controller
+      },
+    ],
+    lookup(each.value,"alb_config", null) != null ? [
+      # AWS Load Balancer Annotations
+      {
+        name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-type"
+        value = lookup(each.value, "scheme_type", "internet-facing" ) != "internet-facing" ? "internal" : "external"
+      },
+      {
+        name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-nlb-target-type"
+        value = lookup(each.value.alb_config, "alb_ingress_traffic_mode", "ip")
+      },
+      {
+        name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-scheme"
+        value = lookup(each.value, "scheme_type", "internet-facing")
+      },
+      {
+        name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-cross-zone-load-balancing-enabled"
+        value = lookup(each.value.alb_config, "enable_cross_zone", false) == true ? true : false
+      },
+      {
+      name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/aws-load-balancer-ip-address-type"
+      value = lower(lookup(each.value.alb_config, "alb_family_type", "ipv4"))
+      }
+    ] : []
+  )
   depends_on = [
     time_sleep.wait_for_node,
     helm_release.aws_alb_controller,

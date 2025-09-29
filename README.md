@@ -1,3 +1,5 @@
+This project has been archived. The code has been updated [here](https://github.com/obreo/eks-enterprise) 
+---
 # Effortless EKS Cluster Setup: Terraform Module for Hybrid EC2 and Fargate Environments Supporting Essential Kubernetes Tools
 
 # ARCHITECTURE
